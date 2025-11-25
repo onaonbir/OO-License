@@ -1,0 +1,47 @@
+{
+    "name": "onaonbir/oo-license",
+    "description": "Flexible and powerful license key management system for Laravel applications with hardware locking, feature-based licensing, and multi-device support.",
+    "type": "library",
+    "version": "1.0.0",
+    "license": "MIT",
+    "keywords": [
+        "laravel",
+        "license",
+        "licensing",
+        "key-generation",
+        "saas",
+        "software-licensing",
+        "hardware-locking",
+        "device-management",
+        "activation"
+    ],
+    "require": {
+        "php": "^8.3",
+        "illuminate/support": "^10.0|^11.0|^12.0",
+        "illuminate/database": "^10.0|^11.0|^12.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "OnaOnbir\\OOLicense\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "OnaOnbir\\OOLicense\\OOLicenseServiceProvider"
+            ]
+        }
+    },
+    "authors": [
+        {
+            "name": "Berkay Barışkan",
+            "email": "berkaybariskan0208@gmail.com"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/onaonbir/oo-license/issues",
+        "source": "https://github.com/onaonbir/oo-license"
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}

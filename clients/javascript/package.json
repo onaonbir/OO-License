@@ -1,0 +1,21 @@
+{
+  "name": "oo-license-client",
+  "version": "1.0.0",
+  "description": "OO-License Client SDK for JavaScript/Node.js",
+  "main": "oo-license-client.js",
+  "scripts": {
+    "test": "node examples/example.js"
+  },
+  "keywords": [
+    "license",
+    "licensing",
+    "software-license",
+    "license-key",
+    "validation"
+  ],
+  "author": "OnaOnbir",
+  "license": "MIT",
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}

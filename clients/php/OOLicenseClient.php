@@ -229,4 +229,128 @@ class OOLicenseClient
 
         return $result;
     }
+
+    /**
+     * Track usage event
+     *
+     * @param string $licenseKey
+     * @param string $eventType Event category: app_opened, feature_used, button_clicked, error_occurred, custom
+     * @param string $eventName Descriptive name
+     * @param array $eventData Custom event data
+     * @param array $metadata Additional metadata
+     * @return array
+     * @throws \Exception
+     */
+    public function trackUsage(
+        string $licenseKey,
+        string $eventType,
+        string $eventName,
+        array $eventData = [],
+        array $metadata = []
+    ): array {
+        return $this->makeRequest('/api/license/track', [
+            'license_key' => $licenseKey,
+            'event_type' => $eventType,
+            'event_name' => $eventName,
+            'event_data' => $eventData,
+            'metadata' => $metadata,
+        ]);
+    }
+
+    /**
+     * Track multiple events at once (batch)
+     *
+     * @param string $licenseKey
+     * @param array $events Array of events
+     * @param array $metadata Common metadata
+     * @return array
+     * @throws \Exception
+     */
+    public function trackUsageBatch(string $licenseKey, array $events, array $metadata = []): array
+    {
+        return $this->makeRequest('/api/license/track-batch', [
+            'license_key' => $licenseKey,
+            'events' => $events,
+            'metadata' => $metadata,
+        ]);
+    }
+
+    /**
+     * Helper: Track app opened
+     */
+    public function trackAppOpened(string $licenseKey, string $appVersion = '1.0.0'): array
+    {
+        return $this->trackUsage(
+            $licenseKey,
+            'app_opened',
+            'Application Opened',
+            [],
+            ['app_version' => $appVersion]
+        );
+    }
+
+    /**
+     * Helper: Track feature usage
+     */
+    public function trackFeature(string $licenseKey, string $featureName, array $data = []): array
+    {
+        return $this->trackUsage(
+            $licenseKey,
+            'feature_used',
+            $featureName,
+            $data
+        );
+    }
+
+    /**
+     * Helper: Track button click
+     */
+    public function trackButtonClick(string $licenseKey, string $buttonName, array $data = []): array
+    {
+        return $this->trackUsage(
+            $licenseKey,
+            'button_clicked',
+            $buttonName,
+            $data
+        );
+    }
+
+    /**
+     * Helper: Track error
+     */
+    public function trackError(string $licenseKey, string $errorMessage, array $data = []): array
+    {
+        return $this->trackUsage(
+            $licenseKey,
+            'error_occurred',
+            $errorMessage,
+            $data
+        );
+    }
+
+    /**
+     * Get usage statistics
+     */
+    public function getUsageStats(string $licenseKey, string $period = 'all'): array
+    {
+        $url = $this->apiUrl . '/api/license/usage-stats?license_key=' . urlencode($licenseKey) . '&period=' . $period;
+
+        $ch = curl_init($url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            'Accept: application/json',
+        ]);
+
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+
+        $result = json_decode($response, true);
+
+        if ($httpCode >= 400) {
+            throw new \Exception($result['message'] ?? 'Failed to get usage stats');
+        }
+
+        return $result;
+    }
 }

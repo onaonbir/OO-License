@@ -63,6 +63,14 @@ class ProjectUserKey extends Model
     }
 
     /**
+     * Get all usage tracking events for this key
+     */
+    public function usages(): HasMany
+    {
+        return $this->hasMany(ProjectUserKeyUsage::class, 'project_user_key_id');
+    }
+
+    /**
      * Check if key is expired
      */
     public function isExpired(): bool

@@ -220,6 +220,152 @@ class OOLicenseClient {
             req.end();
         });
     }
+
+    /**
+     * Track usage event
+     *
+     * @param {string} licenseKey
+     * @param {string} eventType - Event category: app_opened, feature_used, button_clicked, error_occurred, custom
+     * @param {string} eventName - Descriptive name
+     * @param {Object} eventData - Custom event data
+     * @param {Object} metadata - Additional metadata
+     * @returns {Promise<Object>}
+     */
+    async trackUsage(licenseKey, eventType, eventName, eventData = {}, metadata = {}) {
+        return await this.makeRequest('/api/license/track', {
+            license_key: licenseKey,
+            event_type: eventType,
+            event_name: eventName,
+            event_data: eventData,
+            metadata: metadata
+        });
+    }
+
+    /**
+     * Track multiple events at once (batch)
+     *
+     * @param {string} licenseKey
+     * @param {Array} events - Array of events
+     * @param {Object} metadata - Common metadata
+     * @returns {Promise<Object>}
+     */
+    async trackUsageBatch(licenseKey, events, metadata = {}) {
+        return await this.makeRequest('/api/license/track-batch', {
+            license_key: licenseKey,
+            events: events,
+            metadata: metadata
+        });
+    }
+
+    /**
+     * Helper: Track app opened
+     *
+     * @param {string} licenseKey
+     * @param {string} appVersion
+     * @returns {Promise<Object>}
+     */
+    async trackAppOpened(licenseKey, appVersion = '1.0.0') {
+        return await this.trackUsage(
+            licenseKey,
+            'app_opened',
+            'Application Opened',
+            {},
+            { app_version: appVersion }
+        );
+    }
+
+    /**
+     * Helper: Track feature usage
+     *
+     * @param {string} licenseKey
+     * @param {string} featureName
+     * @param {Object} data
+     * @returns {Promise<Object>}
+     */
+    async trackFeature(licenseKey, featureName, data = {}) {
+        return await this.trackUsage(
+            licenseKey,
+            'feature_used',
+            featureName,
+            data
+        );
+    }
+
+    /**
+     * Helper: Track button click
+     *
+     * @param {string} licenseKey
+     * @param {string} buttonName
+     * @param {Object} data
+     * @returns {Promise<Object>}
+     */
+    async trackButtonClick(licenseKey, buttonName, data = {}) {
+        return await this.trackUsage(
+            licenseKey,
+            'button_clicked',
+            buttonName,
+            data
+        );
+    }
+
+    /**
+     * Helper: Track error
+     *
+     * @param {string} licenseKey
+     * @param {string} errorMessage
+     * @param {Object} data
+     * @returns {Promise<Object>}
+     */
+    async trackError(licenseKey, errorMessage, data = {}) {
+        return await this.trackUsage(
+            licenseKey,
+            'error_occurred',
+            errorMessage,
+            data
+        );
+    }
+
+    /**
+     * Get usage statistics
+     *
+     * @param {string} licenseKey
+     * @param {string} period - all, today, week, month
+     * @returns {Promise<Object>}
+     */
+    async getUsageStats(licenseKey, period = 'all') {
+        const url = new URL(this.apiUrl + '/api/license/usage-stats');
+        url.searchParams.append('license_key', licenseKey);
+        url.searchParams.append('period', period);
+
+        return new Promise((resolve, reject) => {
+            const protocol = url.protocol === 'https:' ? https : require('http');
+
+            const req = protocol.get(url, (res) => {
+                let body = '';
+
+                res.on('data', (chunk) => {
+                    body += chunk;
+                });
+
+                res.on('end', () => {
+                    try {
+                        const result = JSON.parse(body);
+
+                        if (res.statusCode >= 400) {
+                            reject(new Error(result.message || 'Failed to get usage stats'));
+                        } else {
+                            resolve(result);
+                        }
+                    } catch (error) {
+                        reject(new Error('Invalid JSON response'));
+                    }
+                });
+            });
+
+            req.on('error', reject);
+            req.end();
+        });
+    }
 }
 
 module.exports = OOLicenseClient;

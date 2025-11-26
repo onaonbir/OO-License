@@ -166,6 +166,13 @@ Activate a license key on a device.
     "error": "DEVICE_MISMATCH",
     "message": "Device ID mismatch"
 }
+
+// 409 - Device already activated
+{
+    "success": false,
+    "error": "DEVICE_ALREADY_ACTIVATED",
+    "message": "Device 'DEVICE-12345' is already activated for this license key"
+}
 ```
 
 ### 2. POST /api/license/validate
@@ -222,6 +229,7 @@ Validate a license key.
 | `KEY_INACTIVE` | License key is inactive/revoked | 403 |
 | `MAX_DEVICES_REACHED` | Device limit reached | 403 |
 | `NOT_ACTIVATED` | Device not activated | 403 |
+| `DEVICE_ALREADY_ACTIVATED` | Device already activated | 409 |
 | `DEVICE_MISMATCH` | Device info mismatch | 400 |
 | `EMAIL_MISMATCH` | Email doesn't match | 403 |
 | `DECRYPTION_FAILED` | Failed to decrypt device info | 400 |

@@ -273,6 +273,96 @@ class MainAppScreen extends StatelessWidget {
 
 See [main README](../../README.md) for detailed API documentation.
 
+## Usage Analytics
+
+### Track Events
+
+```dart
+final client = OOLicenseClient('https://license.example.com', 'secret-key');
+const licenseKey = 'BFB2-xxxxx.yyyy';
+
+// Track app opened
+await client.trackAppOpened(licenseKey, appVersion: '2.1.0');
+
+// Track feature usage
+await client.trackFeature(licenseKey, 'Export PDF', data: {
+  'format': 'pdf',
+  'pages': 10,
+  'quality': 'high',
+});
+
+// Track button click
+await client.trackButtonClick(licenseKey, 'Save Button', data: {
+  'screen': 'editor',
+  'hasChanges': true,
+});
+
+// Track error
+await client.trackError(licenseKey, 'File Save Failed', data: {
+  'errorCode': 'FS_001',
+  'filePath': '/tmp/document.pdf',
+});
+
+// Custom event
+await client.trackUsage(
+  licenseKey,
+  'custom',
+  'Settings Changed',
+  eventData: {'theme': 'dark', 'language': 'en'},
+  metadata: {'screen': 'preferences'},
+);
+```
+
+### Batch Tracking
+
+```dart
+// Send multiple events at once (more efficient)
+await client.trackUsageBatch(licenseKey, [
+  {'type': 'app_opened', 'name': 'App Started'},
+  {'type': 'feature_used', 'name': 'Import CSV', 'data': {'rows': 1000}},
+  {'type': 'button_clicked', 'name': 'Export Button'},
+], metadata: {'appVersion': '2.1.0', 'platform': Platform.operatingSystem});
+```
+
+### Flutter Integration
+
+```dart
+class MyApp extends StatefulWidget {
+  final client = OOLicenseClient('https://license.example.com', 'secret-key');
+  final licenseKey = 'BFB2-xxxxx.yyyy';
+
+  @override
+  void initState() {
+    super.initState();
+    // Track app opened
+    client.trackAppOpened(licenseKey, appVersion: '2.1.0');
+  }
+
+  void onExportPressed() async {
+    await client.trackButtonClick(licenseKey, 'Export Button', data: {
+      'format': 'pdf',
+      'screen': 'editor',
+    });
+
+    // Your export logic
+  }
+
+  void onPremiumFeatureUsed(String featureName, Map<String, dynamic> data) async {
+    await client.trackFeature(licenseKey, featureName, data: data);
+  }
+}
+```
+
+### Get Usage Statistics
+
+```dart
+final stats = await client.getUsageStats(licenseKey, period: 'month');
+
+print('Total events: ${stats['total_events']}');
+print('App opens: ${stats['events_by_type']['app_opened']}');
+print('Features used: ${stats['events_by_type']['feature_used']}');
+```
+
 ## Requirements
 
 - Dart SDK >=3.0.0

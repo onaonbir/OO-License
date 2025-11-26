@@ -459,6 +459,83 @@ Get detailed license information.
 }
 ```
 
+## Usage Analytics
+
+### Track Events
+
+```javascript
+const client = new OOLicenseClient('https://license.example.com', 'secret-key');
+const licenseKey = 'BFB2-xxxxx.yyyy';
+
+// Track app opened
+await client.trackAppOpened(licenseKey, '2.1.0');
+
+// Track feature usage
+await client.trackFeature(licenseKey, 'Export PDF', {
+    format: 'pdf',
+    pages: 10,
+    quality: 'high'
+});
+
+// Track button click
+await client.trackButtonClick(licenseKey, 'Save Button', {
+    screen: 'editor',
+    hasChanges: true
+});
+
+// Track error
+await client.trackError(licenseKey, 'File Save Failed', {
+    errorCode: 'FS_001',
+    filePath: '/tmp/document.pdf'
+});
+
+// Custom event
+await client.trackUsage(
+    licenseKey,
+    'custom',
+    'Settings Changed',
+    { theme: 'dark', language: 'en' },
+    { screen: 'preferences' }
+);
+```
+
+### Batch Tracking
+
+```javascript
+// Send multiple events at once (more efficient)
+await client.trackUsageBatch(licenseKey, [
+    { type: 'app_opened', name: 'App Started' },
+    { type: 'feature_used', name: 'Import CSV', data: { rows: 1000 } },
+    { type: 'button_clicked', name: 'Export Button' },
+], { appVersion: '2.1.0', os: process.platform });
+```
+
+### Get Usage Statistics
+
+```javascript
+const stats = await client.getUsageStats(licenseKey, 'month');
+
+console.log('Total events:', stats.total_events);
+console.log('App opens:', stats.events_by_type.app_opened);
+console.log('Features used:', stats.events_by_type.feature_used);
+```
+
+### Integration with Electron
+
+```javascript
+const { app, ipcMain } = require('electron');
+const client = new OOLicenseClient('https://license.example.com', 'secret-key');
+
+app.on('ready', async () => {
+    await client.trackAppOpened(LICENSE_KEY, app.getVersion());
+});
+
+// Track from renderer process
+ipcMain.handle('track-feature', async (event, featureName, data) => {
+    return await client.trackFeature(LICENSE_KEY, featureName, data);
+});
+```
+
 ## Requirements
 
 - Node.js 14.0.0 or higher

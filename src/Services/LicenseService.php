@@ -3,6 +3,7 @@
 namespace OnaOnbir\OOLicense\Services;
 
 use Exception;
+use OnaOnbir\OOLicense\Exceptions\DeviceAlreadyActivatedException;
 use OnaOnbir\OOLicense\Exceptions\DeviceMismatchException;
 use OnaOnbir\OOLicense\Exceptions\DeviceNotActivatedException;
 use OnaOnbir\OOLicense\Exceptions\InvalidKeyException;
@@ -12,6 +13,7 @@ use OnaOnbir\OOLicense\Exceptions\MaxDevicesReachedException;
 use OnaOnbir\OOLicense\Models\Project;
 use OnaOnbir\OOLicense\Models\ProjectUser;
 use OnaOnbir\OOLicense\Models\ProjectUserKey;
+use OnaOnbir\OOLicense\Models\ProjectUserKeyUsage;
 
 class LicenseService
 {
@@ -107,28 +109,12 @@ class LicenseService
         // Check if device already activated
         $existingActivation = $key->activations()
             ->where('device_id', $deviceId)
+            ->where('is_active', true)
             ->first();
 
         if ($existingActivation) {
-            // Log re-activation
-            $existingActivation->validations()->create([
-                'validation_type' => 'activate',
-                'device_info' => $deviceInfo,
-                'ip_address' => $ipAddress,
-                'user_agent' => $userAgent,
-                'request_data' => ['email' => $email],
-                'response_status' => 'success',
-                'validated_at' => now(),
-            ]);
-
-            return [
-                'success' => true,
-                'isValid' => true,
-                'expiryDate' => $key->expiry_date?->toIso8601String(),
-                'features' => $key->features ?? [],
-                'maxDevices' => $key->max_devices,
-                'message' => 'License re-activated successfully',
-            ];
+            // Device already activated - throw exception
+            throw new DeviceAlreadyActivatedException($deviceId);
         }
 
         // Check device limit
@@ -340,5 +326,160 @@ class LicenseService
         $activation->update(['is_active' => false]);
 
         return true;
+    }
+
+    /**
+     * Track usage event for a license key
+     *
+     * @param string $licenseKey
+     * @param string $eventType Event category: app_opened, feature_used, button_clicked, error_occurred, custom
+     * @param string $eventName Descriptive name: "Export PDF Clicked", "Premium Feature Used"
+     * @param array $eventData Custom event data (any JSON-serializable data)
+     * @param array $metadata Additional metadata (ip, user_agent, app_version, etc.)
+     * @return array
+     */
+    public function trackUsage(
+        string $licenseKey,
+        string $eventType,
+        string $eventName,
+        array $eventData = [],
+        array $metadata = []
+    ): array {
+        $key = ProjectUserKey::where('key', $licenseKey)->first();
+
+        if (!$key) {
+            throw new InvalidKeyException('License key not found');
+        }
+
+        // Create usage record
+        $usage = $key->usages()->create([
+            'event_type' => $eventType,
+            'event_name' => $eventName,
+            'event_data' => $eventData,
+            'metadata' => $metadata,
+        ]);
+
+        return [
+            'success' => true,
+            'message' => 'Usage tracked successfully',
+            'usage_id' => $usage->id,
+        ];
+    }
+
+    /**
+     * Track multiple usage events at once (bulk)
+     *
+     * @param string $licenseKey
+     * @param array $events Array of events: [['type' => '...', 'name' => '...', 'data' => [...]], ...]
+     * @param array $metadata Common metadata for all events
+     * @return array
+     */
+    public function trackUsageBatch(
+        string $licenseKey,
+        array $events,
+        array $metadata = []
+    ): array {
+        $key = ProjectUserKey::where('key', $licenseKey)->first();
+
+        if (!$key) {
+            throw new InvalidKeyException('License key not found');
+        }
+
+        $usages = [];
+        foreach ($events as $event) {
+            $usages[] = [
+                'id' => (string) \Illuminate\Support\Str::uuid(),
+                'project_user_key_id' => $key->id,
+                'event_type' => $event['type'] ?? 'custom',
+                'event_name' => $event['name'] ?? 'Unknown Event',
+                'event_data' => $event['data'] ?? [],
+                'metadata' => array_merge($metadata, $event['metadata'] ?? []),
+                'created_at' => now(),
+            ];
+        }
+
+        ProjectUserKeyUsage::insert($usages);
+
+        return [
+            'success' => true,
+            'message' => 'Batch usage tracked successfully',
+            'tracked_count' => count($usages),
+        ];
+    }
+
+    /**
+     * Helper: Track app opened event
+     */
+    public function trackAppOpened(string $licenseKey, array $metadata = []): array
+    {
+        return $this->trackUsage(
+            $licenseKey,
+            'app_opened',
+            'Application Opened',
+            [],
+            $metadata
+        );
+    }
+
+    /**
+     * Helper: Track feature usage
+     */
+    public function trackFeatureUsage(string $licenseKey, string $featureName, array $data = [], array $metadata = []): array
+    {
+        return $this->trackUsage(
+            $licenseKey,
+            'feature_used',
+            $featureName,
+            $data,
+            $metadata
+        );
+    }
+
+    /**
+     * Helper: Track error
+     */
+    public function trackError(string $licenseKey, string $errorMessage, array $data = [], array $metadata = []): array
+    {
+        return $this->trackUsage(
+            $licenseKey,
+            'error_occurred',
+            $errorMessage,
+            $data,
+            $metadata
+        );
+    }
+
+    /**
+     * Get usage statistics for a license key
+     */
+    public function getUsageStats(string $licenseKey, ?string $period = 'all'): array
+    {
+        $key = ProjectUserKey::where('key', $licenseKey)->first();
+
+        if (!$key) {
+            throw new InvalidKeyException('License key not found');
+        }
+
+        $query = $key->usages();
+
+        // Apply period filter
+        match ($period) {
+            'today' => $query->today(),
+            'week' => $query->thisWeek(),
+            'month' => $query->thisMonth(),
+            default => null,
+        };
+
+        $totalEvents = $query->count();
+        $eventsByType = $query->selectRaw('event_type, COUNT(*) as count')
+            ->groupBy('event_type')
+            ->pluck('count', 'event_type')
+            ->toArray();
+
+        return [
+            'total_events' => $totalEvents,
+            'events_by_type' => $eventsByType,
+            'period' => $period,
+        ];
     }
 }

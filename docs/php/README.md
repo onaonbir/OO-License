@@ -260,6 +260,8 @@ try {
         echo "License has expired";
     } elseif (strpos($error, 'MAX_DEVICES_REACHED') !== false) {
         echo "Maximum device limit reached";
+    } elseif (strpos($error, 'DEVICE_ALREADY_ACTIVATED') !== false) {
+        echo "This device is already activated";
     } elseif (strpos($error, 'NOT_ACTIVATED') !== false) {
         echo "Device not activated";
     } else {
@@ -348,6 +350,67 @@ Get detailed license information.
     'maxDevices' => 3,
     'validationCount' => 42
 ]
+```
+
+## Usage Analytics
+
+### Track Events
+
+```php
+$client = new OOLicenseClient('https://license.example.com', 'secret-key');
+$licenseKey = 'BFB2-xxxxx.yyyy';
+
+// Track app opened
+$client->trackAppOpened($licenseKey, '2.1.0');
+
+// Track feature usage
+$client->trackFeature($licenseKey, 'Export PDF', [
+    'format' => 'pdf',
+    'pages' => 10,
+    'quality' => 'high',
+]);
+
+// Track button click
+$client->trackButtonClick($licenseKey, 'Save Button', [
+    'screen' => 'editor',
+    'has_changes' => true,
+]);
+
+// Track error
+$client->trackError($licenseKey, 'File Save Failed', [
+    'error_code' => 'FS_001',
+    'file_path' => '/tmp/document.pdf',
+]);
+
+// Custom event
+$client->trackUsage(
+    $licenseKey,
+    'custom',
+    'Settings Changed',
+    ['theme' => 'dark', 'language' => 'en'],
+    ['screen' => 'preferences']
+);
+```
+
+### Batch Tracking
+
+```php
+// Send multiple events at once (more efficient)
+$client->trackUsageBatch($licenseKey, [
+    ['type' => 'app_opened', 'name' => 'App Started'],
+    ['type' => 'feature_used', 'name' => 'Import CSV', 'data' => ['rows' => 1000]],
+    ['type' => 'button_clicked', 'name' => 'Export Button'],
+], ['app_version' => '2.1.0', 'os' => PHP_OS]);
+```
+
+### Get Usage Statistics
+
+```php
+$stats = $client->getUsageStats($licenseKey, 'month');
+
+echo "Total events: " . $stats['total_events'] . "\n";
+echo "App opens: " . $stats['events_by_type']['app_opened'] . "\n";
+echo "Features used: " . $stats['events_by_type']['feature_used'] . "\n";
 ```
 
 ## Requirements

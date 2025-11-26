@@ -186,6 +186,124 @@ class OOLicenseClient {
   }
 }
 
+  /// Track usage event
+  Future<Map<String, dynamic>> trackUsage(
+    String licenseKey,
+    String eventType,
+    String eventName, {
+    Map<String, dynamic>? eventData,
+    Map<String, dynamic>? metadata,
+  }) async {
+    return await _makeRequest('/api/license/track', {
+      'license_key': licenseKey,
+      'event_type': eventType,
+      'event_name': eventName,
+      'event_data': eventData ?? {},
+      'metadata': metadata ?? {},
+    });
+  }
+
+  /// Track multiple events at once (batch)
+  Future<Map<String, dynamic>> trackUsageBatch(
+    String licenseKey,
+    List<Map<String, dynamic>> events, {
+    Map<String, dynamic>? metadata,
+  }) async {
+    return await _makeRequest('/api/license/track-batch', {
+      'license_key': licenseKey,
+      'events': events,
+      'metadata': metadata ?? {},
+    });
+  }
+
+  /// Helper: Track app opened
+  Future<Map<String, dynamic>> trackAppOpened(
+    String licenseKey, {
+    String appVersion = '1.0.0',
+  }) async {
+    return await trackUsage(
+      licenseKey,
+      'app_opened',
+      'Application Opened',
+      metadata: {'app_version': appVersion},
+    );
+  }
+
+  /// Helper: Track feature usage
+  Future<Map<String, dynamic>> trackFeature(
+    String licenseKey,
+    String featureName, {
+    Map<String, dynamic>? data,
+  }) async {
+    return await trackUsage(
+      licenseKey,
+      'feature_used',
+      featureName,
+      eventData: data,
+    );
+  }
+
+  /// Helper: Track button click
+  Future<Map<String, dynamic>> trackButtonClick(
+    String licenseKey,
+    String buttonName, {
+    Map<String, dynamic>? data,
+  }) async {
+    return await trackUsage(
+      licenseKey,
+      'button_clicked',
+      buttonName,
+      eventData: data,
+    );
+  }
+
+  /// Helper: Track error
+  Future<Map<String, dynamic>> trackError(
+    String licenseKey,
+    String errorMessage, {
+    Map<String, dynamic>? data,
+  }) async {
+    return await trackUsage(
+      licenseKey,
+      'error_occurred',
+      errorMessage,
+      eventData: data,
+    );
+  }
+
+  /// Get usage statistics
+  Future<Map<String, dynamic>> getUsageStats(
+    String licenseKey, {
+    String period = 'all',
+  }) async {
+    final url = Uri.parse(
+      '${apiUrl.replaceAll(RegExp(r'/$'), '')}/api/license/usage-stats'
+          '?license_key=$licenseKey&period=$period',
+    );
+
+    try {
+      final response = await http.get(
+        url,
+        headers: {'Accept': 'application/json'},
+      );
+
+      final result = jsonDecode(response.body) as Map<String, dynamic>;
+
+      if (response.statusCode >= 400) {
+        throw LicenseException(
+          result['message'] ?? 'Failed to get usage stats',
+          'STATS_ERROR',
+        );
+      }
+
+      return result;
+    } catch (e) {
+      if (e is LicenseException) rethrow;
+      throw LicenseException('Network error: ${e.toString()}', 'NETWORK_ERROR');
+    }
+  }
+}
+
 /// Custom exception for license errors
 class LicenseException implements Exception {
   final String message;

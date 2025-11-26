@@ -18,7 +18,9 @@ Flexible and powerful license key management system for Laravel applications wit
 - 🎯 **Feature-Based Licensing**: Control features per license key
 - 🔒 **Device Locking**: Hardware-based device identification
 - 📊 **Validation Tracking**: Complete audit trail of all validations
+- 📈 **Usage Analytics**: Track app usage, feature adoption, and custom events
 - 🏢 **Multi-Tenant Ready**: Organization-based isolation
+- 🌍 **Multi-Platform SDKs**: PHP, JavaScript/Node.js, Dart/Flutter clients
 
 ## Installation
 
@@ -122,6 +124,37 @@ if ($result['isValid']) {
     // Access $result['features'], $result['expiryDate']
 }
 ```
+
+### 6. Track Usage Analytics
+
+```php
+use OnaOnbir\OOLicense\Services\LicenseService;
+
+$licenseService = app(LicenseService::class);
+
+// Track feature usage
+$licenseService->trackFeatureUsage('BFB2-xxxxx.yyyy', 'Export PDF', [
+    'format' => 'pdf',
+    'pages' => 10,
+]);
+
+// Track app opened
+$licenseService->trackAppOpened('BFB2-xxxxx.yyyy', ['app_version' => '2.1.0']);
+
+// Track custom event
+$licenseService->trackUsage(
+    licenseKey: 'BFB2-xxxxx.yyyy',
+    eventType: 'custom',
+    eventName: 'Payment Completed',
+    eventData: ['amount' => 99.99],
+    metadata: ['currency' => 'USD']
+);
+
+// Get usage statistics
+$stats = $licenseService->getUsageStats('BFB2-xxxxx.yyyy', 'month');
+```
+
+[📖 Usage Tracking Documentation](docs/USAGE_TRACKING.md)
 
 ## Key Generators
 
@@ -303,6 +336,8 @@ final result = await client.activate('BFB2-xxxxx.yyyy', 'user@example.com');
 ## Documentation
 
 - [Server-Side Installation](README.md#installation)
+- [Usage Tracking & Analytics](docs/USAGE_TRACKING.md)
+- [API Endpoints Reference](docs/API_ENDPOINTS.md)
 - [PHP Client Guide](docs/php/README.md)
 - [JavaScript Client Guide](docs/javascript/README.md)
 - [Dart/Flutter Client Guide](docs/dart/README.md)

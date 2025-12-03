@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 
 class ProjectUserKeyActivation extends Model
 {
@@ -39,11 +40,34 @@ class ProjectUserKeyActivation extends Model
     }
 
     /**
+     * Alias for licenseKey - more explicit naming for backend compatibility
+     */
+    public function projectUserKey(): BelongsTo
+    {
+        return $this->licenseKey();
+    }
+
+    /**
      * Get all validations for this activation
      */
     public function validations(): HasMany
     {
         return $this->hasMany(ProjectUserKeyValidation::class, 'activation_id');
+    }
+
+    /**
+     * Get the project user through the license key
+     */
+    public function projectUser(): HasOneThrough
+    {
+        return $this->hasOneThrough(
+            ProjectUser::class,
+            ProjectUserKey::class,
+            'id',                      // Foreign key on ProjectUserKey table
+            'id',                      // Foreign key on ProjectUser table
+            'project_user_key_id',     // Local key on ProjectUserKeyActivation table
+            'project_user_id'          // Local key on ProjectUserKey table
+        );
     }
 
     /**

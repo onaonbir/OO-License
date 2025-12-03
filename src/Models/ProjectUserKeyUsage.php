@@ -38,6 +38,14 @@ class ProjectUserKeyUsage extends Model
     }
 
     /**
+     * Alias for licenseKey - more explicit naming for backend compatibility
+     */
+    public function projectUserKey(): BelongsTo
+    {
+        return $this->licenseKey();
+    }
+
+    /**
      * Scope for specific event type
      */
     public function scopeEventType($query, string $eventType)

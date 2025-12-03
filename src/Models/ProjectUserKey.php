@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
 class ProjectUserKey extends Model
 {
@@ -60,6 +61,21 @@ class ProjectUserKey extends Model
     public function activations(): HasMany
     {
         return $this->hasMany(ProjectUserKeyActivation::class, 'project_user_key_id');
+    }
+
+    /**
+     * Get all validations for this key through activations
+     */
+    public function validations(): HasManyThrough
+    {
+        return $this->hasManyThrough(
+            ProjectUserKeyValidation::class,
+            ProjectUserKeyActivation::class,
+            'project_user_key_id', // Foreign key on activations table
+            'activation_id',       // Foreign key on validations table
+            'id',                  // Local key on keys table
+            'id'                   // Local key on activations table
+        );
     }
 
     /**

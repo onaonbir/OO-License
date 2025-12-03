@@ -8,6 +8,7 @@ use OnaOnbir\OOLicense\Models\ProjectUser;
 abstract class AbstractKeyGenerator
 {
     protected Project $project;
+
     protected array $options;
 
     public function __construct(Project $project, array $options = [])
@@ -29,26 +30,17 @@ abstract class AbstractKeyGenerator
     /**
      * Generate a new license key
      *
-     * @param ProjectUser $user
-     * @param array $options
      * @return array ['key' => string, 'version' => string, 'format' => string, 'metadata' => array]
      */
     abstract public function generate(ProjectUser $user, array $options = []): array;
 
     /**
      * Validate key format and signature
-     *
-     * @param string $key
-     * @param array $deviceInfo
-     * @return bool
      */
     abstract public function validate(string $key, array $deviceInfo): bool;
 
     /**
      * Decode and extract information from key
-     *
-     * @param string $key
-     * @return array|null
      */
     abstract public function decode(string $key): ?array;
 
@@ -105,7 +97,7 @@ abstract class AbstractKeyGenerator
      */
     protected function isExpired(?string $expiryDate): bool
     {
-        if (!$expiryDate) {
+        if (! $expiryDate) {
             return false;
         }
 

@@ -76,7 +76,7 @@ class BfbKeyGeneratorV2 extends AbstractKeyGenerator
         // Check pattern: BFB2-{BASE64}.{HEX16}
         $pattern = '/^BFB2-([A-Za-z0-9+\/=]+)\.([a-f0-9]{16})$/';
 
-        if (!preg_match($pattern, $key, $matches)) {
+        if (! preg_match($pattern, $key, $matches)) {
             return false;
         }
 
@@ -91,7 +91,7 @@ class BfbKeyGeneratorV2 extends AbstractKeyGenerator
         );
 
         // Use timing-safe comparison
-        if (!hash_equals($expectedSignature, $providedSignature)) {
+        if (! hash_equals($expectedSignature, $providedSignature)) {
             return false;
         }
 
@@ -99,7 +99,7 @@ class BfbKeyGeneratorV2 extends AbstractKeyGenerator
         try {
             $payload = json_decode(base64_decode($encodedPayload), true);
 
-            if (!$payload || !isset($payload['version']) || $payload['version'] !== 'v2') {
+            if (! $payload || ! isset($payload['version']) || $payload['version'] !== 'v2') {
                 return false;
             }
 
@@ -121,7 +121,7 @@ class BfbKeyGeneratorV2 extends AbstractKeyGenerator
     {
         $pattern = '/^BFB2-([A-Za-z0-9+\/=]+)\.([a-f0-9]{16})$/';
 
-        if (!preg_match($pattern, $key, $matches)) {
+        if (! preg_match($pattern, $key, $matches)) {
             return null;
         }
 
@@ -131,7 +131,7 @@ class BfbKeyGeneratorV2 extends AbstractKeyGenerator
         try {
             $payload = json_decode(base64_decode($encodedPayload), true);
 
-            if (!$payload) {
+            if (! $payload) {
                 return null;
             }
 

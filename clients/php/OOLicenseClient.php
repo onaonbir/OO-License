@@ -7,20 +7,21 @@ namespace OnaOnbir\OOLicenseClient;
  *
  * Simple PHP client for validating and activating license keys
  *
- * @package OnaOnbir\OOLicenseClient
  * @version 1.0.0
  */
 class OOLicenseClient
 {
     private string $apiUrl;
+
     private string $secretKey;
+
     private array $deviceInfo;
 
     /**
      * Initialize the license client
      *
-     * @param string $apiUrl Your license server URL (e.g., https://license.yourdomain.com)
-     * @param string $secretKey Your project secret key
+     * @param  string  $apiUrl  Your license server URL (e.g., https://license.yourdomain.com)
+     * @param  string  $secretKey  Your project secret key
      */
     public function __construct(string $apiUrl, string $secretKey)
     {
@@ -32,9 +33,10 @@ class OOLicenseClient
     /**
      * Activate a license key
      *
-     * @param string $licenseKey The license key to activate
-     * @param string $email User's email address
+     * @param  string  $licenseKey  The license key to activate
+     * @param  string  $email  User's email address
      * @return array Response from server
+     *
      * @throws \Exception
      */
     public function activate(string $licenseKey, string $email): array
@@ -54,9 +56,10 @@ class OOLicenseClient
     /**
      * Validate a license key
      *
-     * @param string $licenseKey The license key to validate
-     * @param string $email User's email address
+     * @param  string  $licenseKey  The license key to validate
+     * @param  string  $email  User's email address
      * @return array Response from server
+     *
      * @throws \Exception
      */
     public function validate(string $licenseKey, string $email): array
@@ -75,15 +78,12 @@ class OOLicenseClient
 
     /**
      * Check if license is valid and active
-     *
-     * @param string $licenseKey
-     * @param string $email
-     * @return bool
      */
     public function isValid(string $licenseKey, string $email): bool
     {
         try {
             $result = $this->validate($licenseKey, $email);
+
             return $result['success'] && $result['isValid'];
         } catch (\Exception $e) {
             return false;
@@ -92,10 +92,6 @@ class OOLicenseClient
 
     /**
      * Get license information
-     *
-     * @param string $licenseKey
-     * @param string $email
-     * @return array|null
      */
     public function getLicenseInfo(string $licenseKey, string $email): ?array
     {
@@ -110,6 +106,7 @@ class OOLicenseClient
                     'validationCount' => $result['validationCount'] ?? 0,
                 ];
             }
+
             return null;
         } catch (\Exception $e) {
             return null;
@@ -118,8 +115,6 @@ class OOLicenseClient
 
     /**
      * Collect device information
-     *
-     * @return array
      */
     private function collectDeviceInfo(): array
     {
@@ -134,8 +129,6 @@ class OOLicenseClient
 
     /**
      * Generate unique device ID
-     *
-     * @return string
      */
     private function getDeviceId(): string
     {
@@ -157,8 +150,8 @@ class OOLicenseClient
         }
 
         // Fallback: Use hostname + OS
-        if (!$macAddress) {
-            $macAddress = gethostname() . '_' . PHP_OS;
+        if (! $macAddress) {
+            $macAddress = gethostname().'_'.PHP_OS;
         }
 
         return hash('sha256', $macAddress);
@@ -166,9 +159,6 @@ class OOLicenseClient
 
     /**
      * Encrypt device information
-     *
-     * @param array $deviceInfo
-     * @return string
      */
     private function encryptDeviceInfo(array $deviceInfo): string
     {
@@ -184,20 +174,17 @@ class OOLicenseClient
             $iv
         );
 
-        return base64_encode($iv) . ':' . base64_encode($encrypted);
+        return base64_encode($iv).':'.base64_encode($encrypted);
     }
 
     /**
      * Make HTTP request to license server
      *
-     * @param string $endpoint
-     * @param array $data
-     * @return array
      * @throws \Exception
      */
     private function makeRequest(string $endpoint, array $data): array
     {
-        $url = $this->apiUrl . $endpoint;
+        $url = $this->apiUrl.$endpoint;
 
         $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -219,8 +206,8 @@ class OOLicenseClient
 
         $result = json_decode($response, true);
 
-        if (!$result) {
-            throw new \Exception("Invalid JSON response from server");
+        if (! $result) {
+            throw new \Exception('Invalid JSON response from server');
         }
 
         if ($httpCode >= 400) {
@@ -233,12 +220,11 @@ class OOLicenseClient
     /**
      * Track usage event
      *
-     * @param string $licenseKey
-     * @param string $eventType Event category: app_opened, feature_used, button_clicked, error_occurred, custom
-     * @param string $eventName Descriptive name
-     * @param array $eventData Custom event data
-     * @param array $metadata Additional metadata
-     * @return array
+     * @param  string  $eventType  Event category: app_opened, feature_used, button_clicked, error_occurred, custom
+     * @param  string  $eventName  Descriptive name
+     * @param  array  $eventData  Custom event data
+     * @param  array  $metadata  Additional metadata
+     *
      * @throws \Exception
      */
     public function trackUsage(
@@ -260,10 +246,9 @@ class OOLicenseClient
     /**
      * Track multiple events at once (batch)
      *
-     * @param string $licenseKey
-     * @param array $events Array of events
-     * @param array $metadata Common metadata
-     * @return array
+     * @param  array  $events  Array of events
+     * @param  array  $metadata  Common metadata
+     *
      * @throws \Exception
      */
     public function trackUsageBatch(string $licenseKey, array $events, array $metadata = []): array
@@ -333,7 +318,7 @@ class OOLicenseClient
      */
     public function getUsageStats(string $licenseKey, string $period = 'all'): array
     {
-        $url = $this->apiUrl . '/api/license/usage-stats?license_key=' . urlencode($licenseKey) . '&period=' . $period;
+        $url = $this->apiUrl.'/api/license/usage-stats?license_key='.urlencode($licenseKey).'&period='.$period;
 
         $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);

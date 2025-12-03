@@ -43,7 +43,7 @@ class BfbKeyGeneratorV1 extends AbstractKeyGenerator
         ];
 
         // 4. Format key
-        $key = 'BFB-' . implode('-', $segments);
+        $key = 'BFB-'.implode('-', $segments);
 
         // 5. Build metadata
         $metadata = [
@@ -70,7 +70,7 @@ class BfbKeyGeneratorV1 extends AbstractKeyGenerator
         // Check pattern: BFB-XXXXXX-XXXXXX-XXXXXX-XXXXXX
         $pattern = '/^BFB-[A-F0-9]{6}-[A-F0-9]{6}-[A-F0-9]{6}-[A-F0-9]{6}$/';
 
-        if (!preg_match($pattern, $key)) {
+        if (! preg_match($pattern, $key)) {
             return false;
         }
 
@@ -82,7 +82,7 @@ class BfbKeyGeneratorV1 extends AbstractKeyGenerator
      */
     public function decode(string $key): ?array
     {
-        if (!$this->validate($key, [])) {
+        if (! $this->validate($key, [])) {
             return null;
         }
 

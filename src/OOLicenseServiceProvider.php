@@ -39,7 +39,7 @@ class OOLicenseServiceProvider extends ServiceProvider
     {
         // Register KeyGeneratorRegistry as singleton
         $this->app->singleton(KeyGeneratorRegistry::class, function ($app) {
-            $registry = new KeyGeneratorRegistry();
+            $registry = new KeyGeneratorRegistry;
 
             // Register built-in generators
             $registry->register('bfb.v1', BfbKeyGeneratorV1::class);
@@ -71,7 +71,7 @@ class OOLicenseServiceProvider extends ServiceProvider
      */
     protected function registerPublishing(): void
     {
-        if (!$this->app->runningInConsole()) {
+        if (! $this->app->runningInConsole()) {
             return;
         }
 

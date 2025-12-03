@@ -1,4 +1,5 @@
 <?php
+
 /**
  * PHP Example - Simple Desktop Application with License Protection
  *
@@ -12,6 +13,7 @@ use OnaOnbir\OOLicenseClient\OOLicenseClient;
 class LicensedApp
 {
     private OOLicenseClient $licenseClient;
+
     private string $configFile = 'license-config.json';
 
     public function __construct()
@@ -29,16 +31,18 @@ class LicensedApp
         echo "=================================\n\n";
 
         // Check if license exists
-        if (!file_exists($this->configFile)) {
+        if (! file_exists($this->configFile)) {
             echo "No license found. Please activate your license.\n\n";
             $this->activateLicense();
+
             return;
         }
 
         // Validate existing license
-        if (!$this->validateExistingLicense()) {
+        if (! $this->validateExistingLicense()) {
             echo "License validation failed. Please re-activate.\n\n";
             $this->activateLicense();
+
             return;
         }
 
@@ -48,10 +52,10 @@ class LicensedApp
 
     private function activateLicense(): void
     {
-        echo "Enter your license key: ";
+        echo 'Enter your license key: ';
         $licenseKey = trim(fgets(STDIN));
 
-        echo "Enter your email: ";
+        echo 'Enter your email: ';
         $email = trim(fgets(STDIN));
 
         try {
@@ -70,13 +74,13 @@ class LicensedApp
                 file_put_contents($this->configFile, json_encode($config, JSON_PRETTY_PRINT));
 
                 echo "\n✓ License activated successfully!\n";
-                echo "Features: " . implode(', ', $result['features']) . "\n";
-                echo "Expires: " . ($result['expiryDate'] ?? 'Never') . "\n\n";
+                echo 'Features: '.implode(', ', $result['features'])."\n";
+                echo 'Expires: '.($result['expiryDate'] ?? 'Never')."\n\n";
 
                 $this->startApplication();
             }
         } catch (Exception $e) {
-            echo "\n❌ Activation failed: " . $e->getMessage() . "\n";
+            echo "\n❌ Activation failed: ".$e->getMessage()."\n";
             exit(1);
         }
     }
@@ -98,7 +102,8 @@ class LicensedApp
 
             return $isValid;
         } catch (Exception $e) {
-            echo "❌ Validation error: " . $e->getMessage() . "\n";
+            echo '❌ Validation error: '.$e->getMessage()."\n";
+
             return false;
         }
     }
@@ -111,9 +116,9 @@ class LicensedApp
         echo "  Application Running            \n";
         echo "=================================\n\n";
 
-        echo "Licensed to: " . $config['email'] . "\n";
-        echo "Activated on: " . $config['activated_at'] . "\n";
-        echo "Expires: " . ($config['expiry_date'] ?? 'Never') . "\n\n";
+        echo 'Licensed to: '.$config['email']."\n";
+        echo 'Activated on: '.$config['activated_at']."\n";
+        echo 'Expires: '.($config['expiry_date'] ?? 'Never')."\n\n";
 
         // Check features
         $features = $config['features'] ?? [];
@@ -152,5 +157,5 @@ class LicensedApp
 }
 
 // Run the application
-$app = new LicensedApp();
+$app = new LicensedApp;
 $app->run();

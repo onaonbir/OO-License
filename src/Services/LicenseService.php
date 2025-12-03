@@ -66,7 +66,7 @@ class LicenseService
         // Find license key
         $key = ProjectUserKey::where('key', $licenseKey)->first();
 
-        if (!$key) {
+        if (! $key) {
             throw new InvalidKeyException('License key not found');
         }
 
@@ -77,11 +77,11 @@ class LicenseService
         try {
             $deviceInfo = $this->decryptDeviceInfo($encryptedDeviceInfo, $project->secret_key);
         } catch (Exception $e) {
-            throw new DeviceMismatchException('Failed to decrypt device information: ' . $e->getMessage());
+            throw new DeviceMismatchException('Failed to decrypt device information: '.$e->getMessage());
         }
 
         // Verify device ID matches
-        if (!isset($deviceInfo['deviceId']) || $deviceInfo['deviceId'] !== $deviceId) {
+        if (! isset($deviceInfo['deviceId']) || $deviceInfo['deviceId'] !== $deviceId) {
             throw new DeviceMismatchException('Device ID mismatch');
         }
 
@@ -91,18 +91,18 @@ class LicenseService
         }
 
         // Check if key is active
-        if (!$key->is_active) {
-            throw new KeyInactiveException();
+        if (! $key->is_active) {
+            throw new KeyInactiveException;
         }
 
         // Check if expired
         if ($key->isExpired()) {
-            throw new LicenseExpiredException();
+            throw new LicenseExpiredException;
         }
 
         // Validate key format
         $generator = $this->registry->make($project->key_generator_class, $project);
-        if (!$generator->validate($licenseKey, $deviceInfo)) {
+        if (! $generator->validate($licenseKey, $deviceInfo)) {
             throw new InvalidKeyException('Invalid key format');
         }
 
@@ -166,7 +166,7 @@ class LicenseService
         // Find license key
         $key = ProjectUserKey::where('key', $licenseKey)->first();
 
-        if (!$key) {
+        if (! $key) {
             throw new InvalidKeyException('License key not found');
         }
 
@@ -177,11 +177,11 @@ class LicenseService
         try {
             $deviceInfo = $this->decryptDeviceInfo($encryptedDeviceInfo, $project->secret_key);
         } catch (Exception $e) {
-            throw new DeviceMismatchException('Failed to decrypt device information: ' . $e->getMessage());
+            throw new DeviceMismatchException('Failed to decrypt device information: '.$e->getMessage());
         }
 
         // Verify device ID matches
-        if (!isset($deviceInfo['deviceId']) || $deviceInfo['deviceId'] !== $deviceId) {
+        if (! isset($deviceInfo['deviceId']) || $deviceInfo['deviceId'] !== $deviceId) {
             throw new DeviceMismatchException('Device ID mismatch');
         }
 
@@ -191,18 +191,18 @@ class LicenseService
         }
 
         // Check if key is active
-        if (!$key->is_active) {
-            throw new KeyInactiveException();
+        if (! $key->is_active) {
+            throw new KeyInactiveException;
         }
 
         // Check if expired
         if ($key->isExpired()) {
-            throw new LicenseExpiredException();
+            throw new LicenseExpiredException;
         }
 
         // Validate key format
         $generator = $this->registry->make($project->key_generator_class, $project);
-        if (!$generator->validate($licenseKey, $deviceInfo)) {
+        if (! $generator->validate($licenseKey, $deviceInfo)) {
             throw new InvalidKeyException('Invalid key format');
         }
 
@@ -212,8 +212,8 @@ class LicenseService
             ->where('is_active', true)
             ->first();
 
-        if (!$activation) {
-            throw new DeviceNotActivatedException();
+        if (! $activation) {
+            throw new DeviceNotActivatedException;
         }
 
         // Log validation
@@ -278,7 +278,7 @@ class LicenseService
 
         $deviceInfo = json_decode($decrypted, true);
 
-        if (!$deviceInfo) {
+        if (! $deviceInfo) {
             throw new Exception('Invalid device info JSON');
         }
 
@@ -292,7 +292,7 @@ class LicenseService
     {
         $key = ProjectUserKey::where('key', $licenseKey)->first();
 
-        if (!$key) {
+        if (! $key) {
             throw new InvalidKeyException('License key not found');
         }
 
@@ -311,7 +311,7 @@ class LicenseService
     {
         $key = ProjectUserKey::where('key', $licenseKey)->first();
 
-        if (!$key) {
+        if (! $key) {
             throw new InvalidKeyException('License key not found');
         }
 
@@ -319,7 +319,7 @@ class LicenseService
             ->where('device_id', $deviceId)
             ->first();
 
-        if (!$activation) {
+        if (! $activation) {
             return false;
         }
 
@@ -331,12 +331,10 @@ class LicenseService
     /**
      * Track usage event for a license key
      *
-     * @param string $licenseKey
-     * @param string $eventType Event category: app_opened, feature_used, button_clicked, error_occurred, custom
-     * @param string $eventName Descriptive name: "Export PDF Clicked", "Premium Feature Used"
-     * @param array $eventData Custom event data (any JSON-serializable data)
-     * @param array $metadata Additional metadata (ip, user_agent, app_version, etc.)
-     * @return array
+     * @param  string  $eventType  Event category: app_opened, feature_used, button_clicked, error_occurred, custom
+     * @param  string  $eventName  Descriptive name: "Export PDF Clicked", "Premium Feature Used"
+     * @param  array  $eventData  Custom event data (any JSON-serializable data)
+     * @param  array  $metadata  Additional metadata (ip, user_agent, app_version, etc.)
      */
     public function trackUsage(
         string $licenseKey,
@@ -347,7 +345,7 @@ class LicenseService
     ): array {
         $key = ProjectUserKey::where('key', $licenseKey)->first();
 
-        if (!$key) {
+        if (! $key) {
             throw new InvalidKeyException('License key not found');
         }
 
@@ -369,10 +367,8 @@ class LicenseService
     /**
      * Track multiple usage events at once (bulk)
      *
-     * @param string $licenseKey
-     * @param array $events Array of events: [['type' => '...', 'name' => '...', 'data' => [...]], ...]
-     * @param array $metadata Common metadata for all events
-     * @return array
+     * @param  array  $events  Array of events: [['type' => '...', 'name' => '...', 'data' => [...]], ...]
+     * @param  array  $metadata  Common metadata for all events
      */
     public function trackUsageBatch(
         string $licenseKey,
@@ -381,7 +377,7 @@ class LicenseService
     ): array {
         $key = ProjectUserKey::where('key', $licenseKey)->first();
 
-        if (!$key) {
+        if (! $key) {
             throw new InvalidKeyException('License key not found');
         }
 
@@ -456,7 +452,7 @@ class LicenseService
     {
         $key = ProjectUserKey::where('key', $licenseKey)->first();
 
-        if (!$key) {
+        if (! $key) {
             throw new InvalidKeyException('License key not found');
         }
 

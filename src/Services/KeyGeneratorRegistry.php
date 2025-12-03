@@ -11,6 +11,7 @@ class KeyGeneratorRegistry
 {
     /**
      * Registered generators
+     *
      * @var array<string, string>
      */
     protected array $generators = [];
@@ -18,19 +19,20 @@ class KeyGeneratorRegistry
     /**
      * Register a key generator
      *
-     * @param string $identifier Unique identifier (e.g., 'bfb.v1', 'crypto-bot.v1')
-     * @param string $className Fully qualified class name
+     * @param  string  $identifier  Unique identifier (e.g., 'bfb.v1', 'crypto-bot.v1')
+     * @param  string  $className  Fully qualified class name
+     *
      * @throws InvalidArgumentException
      */
     public function register(string $identifier, string $className): void
     {
-        if (!class_exists($className)) {
+        if (! class_exists($className)) {
             throw new InvalidArgumentException("Class {$className} does not exist");
         }
 
-        if (!is_subclass_of($className, AbstractKeyGenerator::class)) {
+        if (! is_subclass_of($className, AbstractKeyGenerator::class)) {
             throw new InvalidArgumentException(
-                "Class {$className} must extend " . AbstractKeyGenerator::class
+                "Class {$className} must extend ".AbstractKeyGenerator::class
             );
         }
 
@@ -39,9 +41,6 @@ class KeyGeneratorRegistry
 
     /**
      * Get registered generator class name
-     *
-     * @param string $identifier
-     * @return string|null
      */
     public function get(string $identifier): ?string
     {
@@ -50,9 +49,6 @@ class KeyGeneratorRegistry
 
     /**
      * Check if generator is registered
-     *
-     * @param string $identifier
-     * @return bool
      */
     public function has(string $identifier): bool
     {
@@ -62,17 +58,13 @@ class KeyGeneratorRegistry
     /**
      * Create generator instance
      *
-     * @param string $identifier
-     * @param Project $project
-     * @param array $options
-     * @return AbstractKeyGenerator
      * @throws RuntimeException
      */
     public function make(string $identifier, Project $project, array $options = []): AbstractKeyGenerator
     {
         $className = $this->get($identifier);
 
-        if (!$className) {
+        if (! $className) {
             throw new RuntimeException("Generator '{$identifier}' is not registered");
         }
 
@@ -101,9 +93,6 @@ class KeyGeneratorRegistry
 
     /**
      * Unregister a generator
-     *
-     * @param string $identifier
-     * @return void
      */
     public function unregister(string $identifier): void
     {
@@ -112,8 +101,6 @@ class KeyGeneratorRegistry
 
     /**
      * Clear all registered generators
-     *
-     * @return void
      */
     public function clear(): void
     {
@@ -122,14 +109,10 @@ class KeyGeneratorRegistry
 
     /**
      * Get generator information
-     *
-     * @param string $identifier
-     * @param Project $project
-     * @return array|null
      */
     public function getInfo(string $identifier, Project $project): ?array
     {
-        if (!$this->has($identifier)) {
+        if (! $this->has($identifier)) {
             return null;
         }
 

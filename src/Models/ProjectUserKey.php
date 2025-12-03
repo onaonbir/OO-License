@@ -91,7 +91,7 @@ class ProjectUserKey extends Model
      */
     public function isExpired(): bool
     {
-        if (!$this->expiry_date) {
+        if (! $this->expiry_date) {
             return false;
         }
 
